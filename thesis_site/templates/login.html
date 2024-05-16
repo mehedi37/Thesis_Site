@@ -1,0 +1,54 @@
+{% extends 'layout/app.html' %}
+
+{% block content %}
+  <div class="container my-5">
+    <div class="row justify-content-center">
+      <div class="col-12 col-md-8 col-lg-6">
+        <div class="card shadow">
+          <div class="card-body">
+            <h1 class="text-center mb-4">Login</h1>
+            <form method="post">
+              {% csrf_token %}
+              {% if messages %}
+                {% for message in messages %}
+                  {% if message.tags == 'error' %}
+                    <div class="alert alert-danger">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" class="bi bi-exclamation-triangle-fill flex-shrink-0 me-2" viewBox="0 0 16 16" role="img" aria-label="Warning:">
+                        <path d="M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767L8.982 1.566zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5zm.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2z" />
+                      </svg>
+                  {% elif message.tags == 'success' %}
+                    <div class="alert alert-success">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0,0,256,256">
+                        <g fill="#0cab3e" fill-rule="nonzero" stroke="none" stroke-width="1" stroke-linecap="butt" stroke-linejoin="miter" stroke-miterlimit="10" stroke-dasharray="" stroke-dashoffset="0" font-family="none" font-weight="none" font-size="none" text-anchor="none" style="mix-blend-mode: normal"><g transform="scale(5.12,5.12)"><path d="M25,2c-12.682,0 -23,10.318 -23,23c0,12.683 10.318,23 23,23c12.683,0 23,-10.317 23,-23c0,-12.682 -10.317,-23 -23,-23zM35.827,16.562l-11.511,16.963l-8.997,-8.349c-0.405,-0.375 -0.429,-1.008 -0.053,-1.413c0.375,-0.406 1.009,-0.428 1.413,-0.053l7.29,6.764l10.203,-15.036c0.311,-0.457 0.933,-0.575 1.389,-0.266c0.458,0.31 0.577,0.932 0.266,1.39z"></path></g></g>
+                      </svg>
+                  {% endif %}
+                    {{ message }}
+                  </div>
+                {% endfor %}
+              {% endif %}
+              <div class="mb-3">
+                <label for="account_type" class="form-label">Account Type</label>
+                <select class="form-select" id="account_type" name="account_type" required>
+                  <option selected value="">Choose...</option>
+                  <option value="student">Student</option>
+                  <option value="supervisor">Supervisor</option>
+                  <option value="unit_coordinator">Unit Coordinator</option>
+                </select>
+              </div>
+              <div class="mb-3">
+                <label for="username" class="form-label">Username</label>
+                <input type="text" class="form-control" id="username" name="username" required />
+              </div>
+              <div class="mb-3">
+                <label for="password" class="form-label">Password</label>
+                <input type="password" class="form-control" id="password" name="password" required />
+              </div>
+              <button type="submit" class="btn btn-primary">Login</button>
+              <a href="{% url 'register' %}" class="btn btn-gray">Register</a>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}
