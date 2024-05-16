@@ -15,6 +15,11 @@
               <li class="nav-item">
                 <a class="nav-link" href="">Add Project</a>
               </li>
+              {% if request.session.account_type == 'supervisor' %}
+                <li class="nav-item">
+                  <a class="nav-link" href="">My Projects</a>
+                </li>
+              {% endif %}
             {% endif %}
             <li class="nav-item">
               <a class="nav-link disabled">
@@ -23,7 +28,7 @@
               </a>
             </li>
             {% comment %}add a vartical bar{% endcomment %}
-            <div class="vr"></div>
+            <div class="vr d-none d-md-block"></div>
 
             <li>
               <a class="nav-link text-danger" href="{% url 'logout' %}">Logout</a>

@@ -2,8 +2,8 @@
 
 {% block body %}
   <div class="container my-5">
-    <h1 class="text-center mb-4">Project List</h1>
-    <div class="d-flex justify-content-end mb-4 btn-group-sm">
+    <h1 class="text-md-center mb-4">Project List</h1>
+    <div class="d-flex justify-content-sm-center justify-content-md-end mb-4 btn-group-sm">
       <a href="?status=available" class="btn btn-outline-primary me-2">Available</a>
       <a href="?status=finished" class="btn btn-outline-success me-2">Finished</a>
       <a href="?" class="btn btn-outline-danger">Clear Filters</a>
@@ -11,7 +11,7 @@
     <div class="row row-cols-1 row-cols-md-3 g-4">
       {% for project in projects %}
         <div class="col">
-          <div class="card h-100">
+          <div class="card h-100 shadow">
             <div class="card-body">
               {% if project.status == 'finished' %}
                 <span class="position-absolute top-0 start-50 translate-middle badge rounded-pill bg-success">Finished</span>
