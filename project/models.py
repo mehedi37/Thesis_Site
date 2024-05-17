@@ -7,7 +7,9 @@ from student.models import Student
 class Project(models.Model):
     project_id = models.AutoField(primary_key=True)
     name = models.CharField(max_length=255)
+    project_detail = models.TextField(null=True, blank=True)
     start_date = models.DateField()
+    max_students = models.IntegerField(blank=True, null=True)
     end_date = models.DateField(null=True, blank=True)
     supervisor = models.ForeignKey(Supervisor, on_delete=models.CASCADE)
     unit_coordinator = models.ForeignKey(

@@ -19,7 +19,7 @@
               <h5 class="card-title">{{ project.name }}</h5>
               <p class="card-text">Supervisor: {{ project.supervisor.user.username }}</p>
               <p class="card-text">
-                Other Supervisors:{% for supervisor in project.student.all %}
+                Students:{% for supervisor in project.student.all %}
                   {{ supervisor.user.username }}{% if not forloop.last %}, {% endif %}
                 {% endfor %}
               </p>
@@ -27,9 +27,11 @@
               <!-- Add other fields as needed -->
               {% comment %}add dates{% endcomment %}
               <small>
+                <p class="mb-0">Student capacity: {{ project.max_students }}</p>
                 <p class="mb-0">Start Date: {{ project.start_date }}</p>
                 <p class="mb-0">End Date: {{ project.end_date }}</p>
               </small>
+              <a href="{% url 'project_detail' project.project_id %}" class="btn btn-primary mt-2">View</a>
             </div>
           </div>
         </div>

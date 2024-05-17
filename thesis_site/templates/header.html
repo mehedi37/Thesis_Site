@@ -7,15 +7,15 @@
       <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation"><span class="navbar-toggler-icon"></span></button>
       <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
         <ul class="navbar-nav">
-          {% if request.user.is_authenticated %}
+          {% if request.user.is_authenticated and not request.user.is_superuser %}
             {% if request.session.account_type == 'supervisor' or request.session.account_type == 'unit_coordinator' %}
               <li class="nav-item">
                 <a class="nav-link" href="">Applications</a>
               </li>
-              <li class="nav-item">
-                <a class="nav-link" href="">Add Project</a>
-              </li>
               {% if request.session.account_type == 'supervisor' %}
+                <li class="nav-item">
+                  <a class="nav-link" href="">Add Project</a>
+                </li>
                 <li class="nav-item">
                   <a class="nav-link" href="">My Projects</a>
                 </li>

@@ -1,8 +1,12 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.utils import timezone
 from .models import Project
 from django.db.models import Q
 from django.utils import timezone
+from thesis_apply.models import ThesisApply
+from thesis_apply.forms import ThesisApplyForm
+from django.contrib.auth.decorators import login_required
+from django.shortcuts import get_object_or_404
 
 
 def project_list(request):
@@ -35,3 +39,37 @@ def project_list(request):
     return render(request, 'project_list.html', {
         'projects': projects,
     })
+
+
+@login_required
+def project_detail(request, project_id):
+    project_get = get_object_or_404(Project, pk=project_id)
+    if request.method == 'POST':
+        form = ThesisApplyForm(request.POST, request.FILES)
+        if form.is_valid():
+            thesis_apply = form.save(commit=False)
+            thesis_apply.project = project_get
+            thesis_apply.applied_students = request.user
+            thesis_apply.save()
+            return redirect('project_detail', project_id=project_id)
+    elif request.method == 'GET':
+        project = Project.objects.get(pk=project_id)
+        thesis_applied = ThesisApply.objects.filter(
+            project=project, applied_students=request.user)
+        if thesis_applied.exists():
+            thesis_applied = thesis_applied.first()
+            print(f"thesis_applied: {thesis_applied}")
+        else:
+            thesis_applied = None
+        if project.end_date and project.end_date <= timezone.now().date():
+            project.status = 'finished'
+        else:
+            project.status = 'available'
+
+        form = ThesisApplyForm()
+        return render(request, 'project.html', {
+            'project': project,
+            'form': form,
+            'thesis_applied': thesis_applied,
+            'required_members': 3,
+        })

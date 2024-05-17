@@ -1,0 +1,87 @@
+{% extends 'header.html' %}
+
+{% block body %}
+  <div class="container my-5">
+    <h1 class="text-md-center mb-4">Project Details</h1>
+    <div class="">
+      <div class="card-body">
+        <h5 class="card-title">Title: <i>{{ project.name }}</i></h5>
+        <p class="mt-4">
+          <b>Description:</b> {{ project.project_detail }}
+        </p>
+        <p class="card-text">
+          <b>Supervisor:</b> {{ project.supervisor.user.username }}
+        </p>
+        <p class="card-text">
+          <b>Student Capacity:</b> {{ project.max_students }}
+        </p>
+        <p class="card-text">
+          <b>Students:</b> {% for supervisor in project.student.all %}
+            {{ supervisor.user.username }}{% if not forloop.last %}, {% endif %}
+          {% endfor %}
+        </p>
+        <p class="card-text">
+          <b>Unit Coordinator:</b> {{ project.unit_coordinator.user.username }}
+        </p>
+        <small>
+          <p class="mb-0">
+            <b>Start Date:</b> {{ project.start_date }}
+          </p>
+          {% if project.end_date != null %}
+            <p class="mb-0">
+              <b>End Date:</b> {{ project.end_date }}
+            </p>
+          {% endif %}
+        </small>
+      </div>
+    </div>
+  </div>
+  {% comment %}For checking vacancy{% endcomment %}
+  {% if project.max_students > project.student.all.count %}
+    {% if user.is_authenticated and request.session.account_type == 'student' and project.status == 'available' %}
+      {% if thesis_applied == null %}
+        <div class="container my-5">
+          <h2 class="text-md-center mb-4">Apply for Project</h2>
+          <form method="post">
+            {% csrf_token %}
+            <div class="mb-3">
+              <label for="message" class="form-label">Message</label>
+              <textarea class="form-control" id="message" name="message" rows="3" required></textarea>
+            </div>
+            <div class="mb-3">
+              <label for="cv" class="form-label">CV</label>
+              <input class="form-control" type="file" id="cv" name="cv" required />
+            </div>
+            <button type="submit" class="btn btn-primary">Apply</button>
+          </form>
+        </div>
+      {% elif project.student.all.count < required_members %}
+        <div class="container my-5">
+          <h2 class="text-md-center mb-4">Application</h2>
+          <div class="alert alert-warning" role="alert">
+            You have already applied for this project. But <b>atleast 3 to 5 students</b> are required start a thesis project. So ask your group members to apply.
+          </div>
+        </div>
+      {% else %}
+        <div class="container my-5">
+          <h2 class="text-md-center mb-4">Application</h2>
+          <div class="alert alert-success" role="alert">You and the group is good to start your research.</div>
+        </div>
+      {% endif %}
+    {% else %}
+      <div class="container my-5">
+        <h2 class="text-md-center mb-4">Application</h2>
+        <div class="alert alert-warning" role="alert">
+          You need to be
+          <a href="{% url 'login' %}">logged in</a>
+          as a <b>Student</b> to apply for this project.
+        </div>
+      </div>
+    {% endif %}
+  {% else %}
+    <div class="container my-5">
+      <h2 class="text-md-center mb-4">Application</h2>
+      <div class="alert alert-danger" role="alert">The project has reached its maximum student capacity.</div>
+    </div>
+  {% endif %}
+{% endblock %}
