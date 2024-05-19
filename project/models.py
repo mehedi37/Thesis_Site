@@ -12,8 +12,9 @@ class Project(models.Model):
     max_students = models.IntegerField(blank=True, null=True)
     end_date = models.DateField(null=True, blank=True)
     supervisor = models.ForeignKey(Supervisor, on_delete=models.CASCADE)
-    unit_coordinator = models.ForeignKey(
-        UnitCoordinator, on_delete=models.CASCADE)
+    unit_co_approved = models.BooleanField(default=False)
+    # unit_coordinator = models.ForeignKey(
+    #     UnitCoordinator, on_delete=models.CASCADE)
     student = models.ManyToManyField(Student, blank=True)
 
     def __str__(self):

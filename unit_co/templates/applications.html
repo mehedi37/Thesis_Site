@@ -1,0 +1,43 @@
+{% extends 'header.html' %}
+{% block body %}
+  <div class="container">
+    <h1 class="text-md-center mb-4">Applications</h1>
+    <table class="table table-hover">
+      <thead>
+        <tr>
+          <th scope="col">Application ID</th>
+          <th scope="col">Project Name</th>
+          <th scope="col">Status</th>
+          <th scope="col">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for application in applications %}
+          <tr scope="row">
+            <td>{{ application.thesis_apply_id }}</td>
+            <td>{{ application.project.name }}</td>
+            <td>
+              {% if application.status == 'Pending' %}
+                <span class="badge bg-warning text-dark">{{ application.status }}</span>
+              {% elif application.status == 'Approved' %}
+                <span class="badge bg-success">{{ application.status }}</span>
+              {% else %}
+                <span class="badge bg-danger">{{ application.status }}</span>
+              {% endif %}
+            <td>
+              <div class="btn-group">
+                {% if request.session.account_type == 'unit_coordinator' %}
+                  <a href="{% url 'view_application' application.thesis_apply_id %}" class="btn btn-primary btn-sm">View</a>
+                  <a href="{% url 'delete_application' application.thesis_apply_id %}" class="btn btn-danger btn-sm">Delete</a>
+                {% elif request.session.account_type == 'supervisor' %}
+                  <a href="{% url 'view_application_supervisor' application.thesis_apply_id %}" class="btn btn-primary btn-sm">View</a>
+                  <a href="{% url 'delete_application_supervisor' application.thesis_apply_id %}" class="btn btn-danger btn-sm">Delete</a>
+                {% endif %}
+              </div>
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+{% endblock body %}

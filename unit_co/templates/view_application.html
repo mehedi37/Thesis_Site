@@ -1,0 +1,55 @@
+{% extends 'header.html' %}
+{% block body %}
+  <div class="container">
+    <h1 class="text-md-center mb-4">Application</h1>
+    <div class="card">
+      <div class="card-body">
+        <h5 class="card-title">Application ID: {{ application.thesis_apply_id }}</h5>
+        <p class="card-text">Project Name: {{ application.project.name }}</p>
+        <p class="card-text">Supervisor Name: {{ application.project.supervisor.user.username }}</p>
+        <p class="card-text">Student Name: {{ application.applied_student.username }}</p>
+        <p class="card-text">Student Email: {{ application.applied_student.email }}</p>
+        <p class="card-text">Message: {{ application.message }}</p>
+        <p class="card-text">CV:
+          {% if application.cv %}
+            <a href="{{ application.cv.url }}" target="_blank">View CV</a>
+          {% else %}
+            No CV uploaded.
+          {% endif %}
+        </p>
+        <p class="card-text">Status:
+          {% if application.status == 'Pending' %}
+            <span class="badge bg-warning text-dark">{{ application.status }}</span>
+          {% elif application.status == 'Approved' %}
+            <span class="badge bg-success">{{ application.status }}</span>
+          {% else %}
+            <span class="badge bg-danger">{{ application.status }}</span>
+          {% endif %}
+        </p>
+        <p class="card-text">Terms Accepted:
+          <input type="checkbox" readonly {% if application.terms_accepted %}checked{% endif %}>
+        </p>
+        <p class="card-text">Supervisor Checked:
+          <input type="checkbox" readonly {% if application.supervisor_checked %}checked{% endif %}>
+        </p>
+        <p class="card-text">Supervisor Approval:
+          <input type="checkbox" readonly {% if application.supervisor_approval %}checked{% endif %}>
+        </p>
+        <p class="card-text">Unit Coordinator Checked:
+          <input type="checkbox" readonly {% if application.unit_co_checked %}checked{% endif %}>
+        </p>
+        <p class="card-text">Unit Coordinator Approval:
+          <input type="checkbox" readonly {% if application.unit_co_approval %}checked{% endif %}>
+        </p>
+        {% if request.session.account_type == 'unit_coordinator' %}
+          <a href="{% url 'approve_application' application.thesis_apply_id %}" class="btn btn-success">Approve</a>
+          <a href="{% url 'reject_application' application.thesis_apply_id %}" class="btn btn-danger">Disapprove</a>
+        {% elif request.session.account_type == 'supervisor' %}
+          <a href="{% url 'approve_application_supervisor' application.thesis_apply_id %}" class="btn btn-success">Approve</a>
+          <a href="{% url 'reject_application_supervisor' application.thesis_apply_id %}" class="btn btn-danger">Disapprove</a>
+        {% endif %}
+        <a href="{% url 'applications' %}" class="btn btn-primary">Back</a>
+      </div>
+    </div>
+  </div>
+{% endblock body %}

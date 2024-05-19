@@ -8,19 +8,25 @@
       <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
         <ul class="navbar-nav">
           {% if request.user.is_authenticated and not request.user.is_superuser %}
-            {% if request.session.account_type == 'supervisor' or request.session.account_type == 'unit_coordinator' %}
+            {% if request.session.account_type == 'supervisor'%}
               <li class="nav-item">
-                <a class="nav-link" href="">Applications</a>
+                <a class="nav-link" href="{% url 'applications_supervisor' %}">Applications</a>
               </li>
-              {% if request.session.account_type == 'supervisor' %}
-                <li class="nav-item">
-                  <a class="nav-link" href="">Add Project</a>
-                </li>
-                <li class="nav-item">
-                  <a class="nav-link" href="">My Projects</a>
-                </li>
+              <li class="nav-item">
+                <a class="nav-link" href="{% url 'create_project' %}">Create Project</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="{% url 'my_projects' %}">My Projects</a>
+              </li>
               {% endif %}
-            {% endif %}
+              {% if request.session.account_type == 'unit_coordinator' %}
+              <li class="nav-item">
+                <a class="nav-link" href="{% url 'applications' %}">Applications</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="{% url 'pending_projects' %}">Pending Projects</a>
+              </li>
+              {% endif %}
             <li class="nav-item">
               <a class="nav-link disabled">
                 Welcome,

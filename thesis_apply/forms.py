@@ -5,4 +5,4 @@ from .models import ThesisApply
 class ThesisApplyForm(forms.ModelForm):
     class Meta:
         model = ThesisApply
-        fields = ['message', 'cv']
+        fields = ['message', 'cv', 'terms_accepted']

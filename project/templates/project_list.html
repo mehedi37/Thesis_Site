@@ -23,7 +23,7 @@
                   {{ supervisor.user.username }}{% if not forloop.last %}, {% endif %}
                 {% endfor %}
               </p>
-              <p class="card-text">Unit Coordinator: {{ project.unit_coordinator.user.username }}</p>
+              {% comment %} <p class="card-text">Unit Coordinator: {{ project.unit_coordinator.user.username }}</p> {% endcomment %}
               <!-- Add other fields as needed -->
               {% comment %}add dates{% endcomment %}
               <small>
@@ -32,6 +32,9 @@
                 <p class="mb-0">End Date: {{ project.end_date }}</p>
               </small>
               <a href="{% url 'project_detail' project.project_id %}" class="btn btn-primary mt-2">View</a>
+              {% if user.is_authenticated and request.session.account_type == 'unit_coordinator' %}
+                <a href="{% url 'edit_project_unit_co' project.project_id %}" class="btn btn-warning mt-2">Edit</a>
+              {% endif %}
             </div>
           </div>
         </div>

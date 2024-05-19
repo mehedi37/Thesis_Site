@@ -20,9 +20,9 @@
             {{ supervisor.user.username }}{% if not forloop.last %}, {% endif %}
           {% endfor %}
         </p>
-        <p class="card-text">
+        {% comment %} <p class="card-text">
           <b>Unit Coordinator:</b> {{ project.unit_coordinator.user.username }}
-        </p>
+        </p> {% endcomment %}
         <small>
           <p class="mb-0">
             <b>Start Date:</b> {{ project.start_date }}
@@ -42,7 +42,7 @@
       {% if thesis_applied == null %}
         <div class="container my-5">
           <h2 class="text-md-center mb-4">Apply for Project</h2>
-          <form method="post">
+          <form method="POST" enctype="multipart/form-data">
             {% csrf_token %}
             <div class="mb-3">
               <label for="message" class="form-label">Message</label>
@@ -52,8 +52,27 @@
               <label for="cv" class="form-label">CV</label>
               <input class="form-control" type="file" id="cv" name="cv" required />
             </div>
+            <div class="form-check mb-3">
+              <input class="form-check-input" type="checkbox" value="True" id="terms_accepted" name="terms_accepted" required>
+              <label class="form-check-label" for="terms_accepted">
+                I accept all the terms and conditions related to the thesis project.
+              </label>
+            </div>
             <button type="submit" class="btn btn-primary">Apply</button>
           </form>
+        </div>
+        {% elif not thesis_applied.unit_co_approval and not thesis_applied.supervisor_approval and thesis_applied.supervisor_checked and thesis_applied.unit_co_checked  %}
+        <div class="container my-5">
+          <h2 class="text-md-center mb-4">Application</h2>
+          <div class="alert alert-danger" role="alert">
+            Your application has been rejected by the supervisor or unit coordinator.
+          </div>
+        {% elif not thesis_applied.unit_co_approval or not thesis_applied.supervisor_approval %}
+        <div class="container my-5">
+          <h2 class="text-md-center mb-4">Application</h2>
+          <div class="alert alert-warning" role="alert">
+            Your application is still pending for approval from the supervisor or unit coordinator.
+          </div>
         </div>
       {% elif project.student.all.count < required_members %}
         <div class="container my-5">
@@ -62,12 +81,25 @@
             You have already applied for this project. But <b>atleast 3 to 5 students</b> are required start a thesis project. So ask your group members to apply.
           </div>
         </div>
-      {% else %}
+      {% elif thesis_applied.unit_co_approval and thesis_applied.supervisor_approval %}
         <div class="container my-5">
           <h2 class="text-md-center mb-4">Application</h2>
-          <div class="alert alert-success" role="alert">You and the group is good to start your research.</div>
+          <div class="alert alert-success" role="alert">You and the group is good to start your research. Application
+            is approved by the supervisor and unit coordinator.
+          </div>
         </div>
       {% endif %}
+    {% elif request.session.account_type == 'supervisor' or request.session.account_type == 'unit_coordinator'%}
+        {%if request.session.account_type == 'unit_coordinator'%}
+        <div class="container my-5">
+          <a href="{% url 'edit_project_unit_co' project.project_id %}" class="btn btn-warning mt-2">Edit</a>
+        </div>
+        {% endif %}
+    {% elif project.status == 'finished'%}
+      <div class="container my-5">
+        <h2 class="text-md-center mb-4">Application</h2>
+        <div class="alert alert-danger" role="alert">The project has finished.</div>
+      </div>
     {% else %}
       <div class="container my-5">
         <h2 class="text-md-center mb-4">Application</h2>

@@ -1,0 +1,37 @@
+{% extends 'header.html' %}
+
+{% block body %}
+  <div class="container">
+    <h1>{{ project.project_id|yesno:"Edit,Create"|default_if_none:"Create" }} Project</h1>
+    <form method="POST" action="{% if project.project_id %}{% url 'edit_project' project.project_id %}{% else %}{% url 'create_project' %}{% endif %}" class="mt-4">
+      {% csrf_token %}
+      <div class="mb-3">
+        <label for="project_name" class="form-label">Project Name:</label>
+        <input type="text" id="project_name" name="project_name" value="{{ project.name|default_if_none:"" }}" required class="form-control">
+      </div>
+      <div class="mb-3">
+        <label for="project_detail" class="form-label">Project Detail:</label>
+        <textarea id="project_detail" name="project_detail" required class="form-control">{{ project.project_detail|default_if_none:"" }}</textarea>
+      </div>
+      <div class="mb-3">
+        <label for="start_date" class="form-label">Start Date:</label>
+        <input type="date" id="start_date" name="start_date" value="{{ project.start_date|date:"Y-m-d"|default_if_none:"" }}" required class="form-control">
+      </div>
+      <div class="mb-3">
+        <label for="end_date" class="form-label">End Date:</label>
+        <input type="date" id="end_date" name="end_date" value="{{ project.end_date|date:"Y-m-d"|default_if_none:"" }}" class="form-control">
+      </div>
+      <div class="mb-3">
+        <label for="max_students" class="form-label">Max Students:</label>
+        <input type="number" id="max_students" name="max_students" value="{{ project.max_students|default_if_none:"" }}" class="form-control">
+      </div>
+      {% if user.is_authenticated and request.session.account_type == 'unit_coordinator' %}
+      <div class="mb-3 form-check">
+        <input type="checkbox" id="coordinator_approved" value="True" name="coordinator_approved" {% if project.unit_co_approved %} checked {% endif %} class="form-check-input">
+        <label for="coordinator_approved" class="form-check-label">Coordinator Approved</label>
+      </div>
+      {% endif %}
+      <input type="submit" value="Save Changes" class="btn btn-primary">
+    </form>
+  </div>
+{% endblock body %}
