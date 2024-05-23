@@ -198,6 +198,7 @@ def approve_application(request, application_id):
             # Create a new conversation for each group of students that applied
             group = application.applied_students.first().user.groups.first()
             conversation = Conversation.objects.create(
+                conversation_title=f"{supervisor.user.username} - {group.name}",
                 supervisor=supervisor,
                 group=group,
             )
@@ -205,7 +206,7 @@ def approve_application(request, application_id):
             Message.objects.create(
                 conversation=conversation,
                 user=request.user,
-                message=f"Group: {group.name}, Your application has been approved !",
+                message=f"Group: \"{group.name}\", Your application has been approved !",
             )
 
             return redirect('applications')
@@ -234,5 +235,37 @@ def reject_application(request, application_id):
             return redirect('applications')
         else:
             return redirect('project_list')
+    else:
+        return redirect('login')
+
+
+def message_unit_co(request, unit_co_id):
+    if request.user.is_authenticated and not request.user.is_superuser:
+        account_type = request.session.get('account_type', 'default_value')
+        if account_type == 'supervisor':
+            supervisor = request.user.supervisor
+            unit_co = UnitCoordinator.objects.get(co_ord_id=unit_co_id)
+            if unit_co is None:
+                return HttpResponse('Unit Coordinator not found', status=404)
+
+            # Check if a conversation with the same unit coordinator and supervisor exists
+            conversation = Conversation.objects.filter(supervisor=supervisor, unit_co=unit_co, group=None).first()
+            if conversation is None:
+                # Create a new conversation
+                conversation = Conversation.objects.create(
+                    conversation_title=f"{supervisor.user.username} - {unit_co.user.username}",
+                    supervisor=supervisor,
+                    unit_co=unit_co,
+                )
+                # Create a new message
+                Message.objects.create(
+                    conversation=conversation,
+                    user=request.user,
+                    message="Conversation created!",
+                )
+            # Redirect to the conversation
+            return redirect('conversation', conversation_id=conversation.conversation_id)
+        else:
+            return HttpResponse('Unauthorized', status=401)
     else:
         return redirect('login')

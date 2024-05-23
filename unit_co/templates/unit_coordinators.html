@@ -1,0 +1,36 @@
+{% extends 'header.html' %}
+
+{% block body %}
+<div class="container my-5">
+  <div class="row justify-content-center">
+    <div class="col-12 col md-8 col-lg-8">
+      <div class="card shadow">
+        <div class="card-body">
+          <h1 class="text-center mb-4">Unit Coordinators</h1>
+          <table class="table table-striped">
+            <thead>
+              <tr>
+                <th>Username</th>
+                <th>Email</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for unit_co in unit_coordinators %}
+              <tr>
+                <td>{{ unit_co.user.username }}</td>
+                <td>{{ unit_co.user.email }}</td>
+                <td>
+                  <a href="{% url 'message_unit_co' unit_co.co_ord_id %}" class="btn btn-primary">Message</a>
+                  {% comment %} <a href="" class="btn btn-primary">✉️ Message</a> {% endcomment %}
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

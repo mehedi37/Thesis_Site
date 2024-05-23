@@ -19,3 +19,15 @@ def pending_projects(request):
             return render(request, 'pending_projects.html', {'projects': projects})
         else:
             return redirect('project_list')
+
+def unit_coordinators(request):
+    # find all the unit coordinators
+    if request.user.is_authenticated and not request.user.is_superuser:
+        account_type = request.session.get('account_type', 'default_value')
+        if account_type == 'supervisor':
+            unit_coordinators = UnitCoordinator.objects.all()
+            return render(request, 'unit_coordinators.html', {'unit_coordinators': unit_coordinators})
+        else:
+            return redirect('project_list')
+    else:
+        return redirect('login')

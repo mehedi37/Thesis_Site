@@ -10,11 +10,21 @@
           {% if request.user.is_authenticated and not request.user.is_superuser %}
           <li class="nav-item dropdown">
             <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-              Messages <span class="badge bg-danger">{{ new_messages_count }}</span>
+              Messages
+              {% if new_conversations_count > 0 %}
+                <span class="badge bg-danger">{{ new_conversations_count }}</span>
+              {% endif %}
             </a>
             <ul class="dropdown-menu dropdown-menu-end" style="max-height: 200px; overflow-y: auto;" aria-labelledby="navbarDropdown">
               {% for conversation in conversations %}
-                <li><a class="dropdown-item" href="{% url 'conversation' conversation.conversation_id %}">{{ conversation.title }}</a></li>
+                <li>
+                  <a class="dropdown-item" href="{% url 'conversation' conversation.conversation_id %}">
+                    {{ conversation.conversation_title }}
+                    {% if conversation.has_new_message %}
+                      <span class="badge bg-danger">.</span>
+                    {% endif %}
+                  </a>
+                </li>
               {% empty %}
                 <li><a class="dropdown-item" href="#">No conversations</a></li>
               {% endfor %}
@@ -23,6 +33,9 @@
           {% if request.session.account_type == 'supervisor'%}
               <li class="nav-item">
                 <a class="nav-link" href="{% url 'applications' %}">Applications</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="{% url 'unit_coordinators' %}">Unit Coordinators</a>
               </li>
               <li class="nav-item">
                 <a class="nav-link" href="{% url 'create_project' %}">Create Project</a>
