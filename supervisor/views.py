@@ -5,11 +5,18 @@ from datetime import datetime
 from thesis_apply.models import ThesisApply
 from student.models import Student
 from unit_co.models import UnitCoordinator
+from supervisor.models import Supervisor
+from django.core.exceptions import ObjectDoesNotExist
+from chat.models import Conversation, Message
+from django.db import transaction
+from django.shortcuts import redirect
+from thesis_apply.models import ThesisApply
+
 
 # Create your views here.
 
 def my_projects(request):
-    if request.user.is_authenticated:
+    if request.user.is_authenticated and not request.user.is_superuser:
         account_type = request.session.get('account_type', 'default_value')
         print(f"account_type: {account_type}")
         if account_type == 'supervisor':
@@ -22,7 +29,7 @@ def my_projects(request):
         return redirect('login')
 
 def create_project(request):
-    if request.user.is_authenticated:
+    if request.user.is_authenticated and not request.user.is_superuser:
         account_type = request.session.get('account_type', 'default_value')
         if account_type == 'supervisor':
             if request.method == "POST":
@@ -59,7 +66,7 @@ def create_project(request):
         return redirect('login')
 
 def edit_project(request, project_id):
-    if request.user.is_authenticated:
+    if request.user.is_authenticated and not request.user.is_superuser:
         account_type = request.session.get('account_type', 'default_value')
         if account_type == 'supervisor' or account_type == 'unit_coordinator':
             project = Project.objects.get(project_id=project_id)
@@ -105,7 +112,7 @@ def edit_project(request, project_id):
         return redirect('login')
 
 def delete_project(request, project_id):
-    if request.user.is_authenticated:
+    if request.user.is_authenticated and not request.user.is_superuser:
         account_type = request.session.get('account_type', 'default_value')
         if account_type == 'supervisor':
             supervisor = request.user.supervisor
@@ -121,5 +128,111 @@ def delete_project(request, project_id):
             return redirect('my_projects')
         else:
             return HttpResponse('Unauthorized', status=401)
+    else:
+        return redirect('login')
+
+def applications(request):
+    if request.user.is_authenticated and not request.user.is_superuser:
+        account_type = request.session.get('account_type', 'default_value')
+        if account_type == 'supervisor':
+            try:
+                supervisor = Supervisor.objects.get(user=request.user)
+                applications = ThesisApply.objects.prefetch_related('applied_students', 'project').filter(project__supervisor__user=supervisor.user).order_by('-supervisor_approval')
+                return render(request, 'applications.html', {'applications': applications})
+            except ObjectDoesNotExist:
+                return HttpResponse('No Supervisor found for this user')
+        else:
+            return redirect('project_list')
+    else:
+        return redirect('login')
+
+def view_application(request, application_id):
+    # view the details of a specific thesis_apply object
+    if request.user.is_authenticated and not request.user.is_superuser:
+        account_type = request.session.get('account_type', 'default_value')
+        if account_type == 'supervisor':
+            application = ThesisApply.objects.prefetch_related('applied_students', 'project').get(thesis_apply_id=application_id)
+            if application.project.supervisor.user != request.user:
+                return HttpResponse('You are not authorized to view this page')
+            return render(request, 'view_application.html', {'application': application})
+        else:
+            return redirect('project_list')
+    else:
+        return redirect('login')
+
+def delete_application(request, application_id):
+    # delete a specific thesis_apply object
+    if request.user.is_authenticated and not request.user.is_superuser:
+        account_type = request.session.get('account_type', 'default_value')
+        if account_type == 'supervisor':
+            application = ThesisApply.objects.get(thesis_apply_id=application_id)
+            if application.project.supervisor.user != request.user:
+                return HttpResponse('You are not authorized to delete this application')
+            application.delete()
+            return redirect('applications')
+        else:
+            return redirect('project_list')
+    else:
+        return redirect('login')
+
+@transaction.atomic
+def approve_application(request, application_id):
+    # approve a specific thesis_apply object
+    if request.user.is_authenticated and not request.user.is_superuser:
+        account_type = request.session.get('account_type', 'default_value')
+        if account_type == 'supervisor':
+            application = ThesisApply.objects.get(thesis_apply_id=application_id)
+            if application.project.supervisor.user != request.user:
+                return HttpResponse('You are not authorized to approve this application')
+            if application.supervisor_checked:
+                return HttpResponse('You have already checked this application. Cannot change it again.')
+
+            application.supervisor_approval = True
+            application.supervisor_checked = True
+            application.status = 'Approved'
+            if application.project.student.exists() and application.project.student.filter(user=application.applied_student.student.user).exists():
+                application.project.student.add(application.applied_student.student)
+            application.save()
+
+            supervisor = Supervisor.objects.get(user=request.user)
+            # Create a new conversation for each group of students that applied
+            group = application.applied_students.first().user.groups.first()
+            conversation = Conversation.objects.create(
+                supervisor=supervisor,
+                group=group,
+            )
+            # Create a new message
+            Message.objects.create(
+                conversation=conversation,
+                user=request.user,
+                message=f"Group: {group.name}, Your application has been approved !",
+            )
+
+            return redirect('applications')
+        else:
+            return redirect('project_list')
+    else:
+        return redirect('login')
+
+
+def reject_application(request, application_id):
+    # reject a specific thesis_apply object
+    if request.user.is_authenticated and not request.user.is_superuser:
+        account_type = request.session.get('account_type', 'default_value')
+        if account_type == 'supervisor':
+            application = ThesisApply.objects.get(thesis_apply_id=application_id)
+            if application.project.supervisor.user != request.user:
+                return HttpResponse('You are not authorized to reject this application')
+            if application.supervisor_checked:
+                return HttpResponse('You have already checked this application. Cannot change it again.')
+            application.supervisor_approval = False
+            application.supervisor_checked = True
+            application.status = 'Rejected'
+            if application.project.student.exists() and application.project.student.filter(user=application.applied_student.student.user).exists():
+                application.project.student.remove(application.applied_student.student)
+            application.save()
+            return redirect('applications')
+        else:
+            return redirect('project_list')
     else:
         return redirect('login')

@@ -7,16 +7,30 @@
         <h5 class="card-title">Application ID: {{ application.thesis_apply_id }}</h5>
         <p class="card-text">Project Name: {{ application.project.name }}</p>
         <p class="card-text">Supervisor Name: {{ application.project.supervisor.user.username }}</p>
-        <p class="card-text">Student Name: {{ application.applied_student.username }}</p>
-        <p class="card-text">Student Email: {{ application.applied_student.email }}</p>
-        <p class="card-text">Message: {{ application.message }}</p>
-        <p class="card-text">CV:
-          {% if application.cv %}
-            <a href="{{ application.cv.url }}" target="_blank">View CV</a>
+        <p class="card-text">
+          Group Name:
+          {% if application.applied_students.first.user.groups.exists %}
+            {{ application.applied_students.first.user.groups.first.name }}
           {% else %}
-            No CV uploaded.
+              No group assigned.
           {% endif %}
-        </p>
+      </p>
+        <p class="card-text">Message: {{ application.message }}</p>
+        <!-- Loop over the applied students -->
+        {% for student in application.applied_students.all %}
+        <div class="mb-2">
+          <h5 class="card-title">Student Details</h5>
+          <p class="card-text">Student Name: {{ student.user.username }}</p>
+          <p class="card-text">Student Email: {{ student.user.email }}</p>
+          <p class="card-text">CV:
+            {% if student.cv %}
+              <a href="{{ student.cv.url }}" target="_blank">View CV</a>
+            {% else %}
+              No CV uploaded.
+            {% endif %}
+          </p>
+        </div>
+        {% endfor %}
         <p class="card-text">Status:
           {% if application.status == 'Pending' %}
             <span class="badge bg-warning text-dark">{{ application.status }}</span>
@@ -35,16 +49,7 @@
         <p class="card-text">Supervisor Approval:
           <input type="checkbox" readonly {% if application.supervisor_approval %}checked{% endif %}>
         </p>
-        <p class="card-text">Unit Coordinator Checked:
-          <input type="checkbox" readonly {% if application.unit_co_checked %}checked{% endif %}>
-        </p>
-        <p class="card-text">Unit Coordinator Approval:
-          <input type="checkbox" readonly {% if application.unit_co_approval %}checked{% endif %}>
-        </p>
-        {% if request.session.account_type == 'unit_coordinator' %}
-          <a href="{% url 'approve_application' application.thesis_apply_id %}" class="btn btn-success">Approve</a>
-          <a href="{% url 'reject_application' application.thesis_apply_id %}" class="btn btn-danger">Disapprove</a>
-        {% elif request.session.account_type == 'supervisor' %}
+        {% if request.session.account_type == 'supervisor' %}
           <a href="{% url 'approve_application_supervisor' application.thesis_apply_id %}" class="btn btn-success">Approve</a>
           <a href="{% url 'reject_application_supervisor' application.thesis_apply_id %}" class="btn btn-danger">Disapprove</a>
         {% endif %}

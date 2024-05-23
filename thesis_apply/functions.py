@@ -7,4 +7,4 @@ def handleUploadFile(file):
     extension = os.path.splitext(file.name)[1]
     unique_filename = f"cv_{get_random_string(length=10)}{extension}"
     file_name = default_storage.save('cv/' + unique_filename, file)
-    return default_storage.url(file_name)
+    return file_name

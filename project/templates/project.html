@@ -38,7 +38,8 @@
   </div>
   {% comment %}For checking vacancy{% endcomment %}
   {% if project.max_students > project.student.all.count %}
-    {% if user.is_authenticated and request.session.account_type == 'student' and project.status == 'available' %}
+  {% if request.user.is_authenticated %}
+    {% if request.session.account_type == 'student' and project.status == 'available' %}
       {% if thesis_applied == null %}
         <div class="container my-5">
           <h2 class="text-md-center mb-4">Apply for Project</h2>
@@ -48,16 +49,20 @@
               <label for="message" class="form-label">Message</label>
               <textarea class="form-control" id="message" name="message" rows="3" required></textarea>
             </div>
-            <div class="mb-3">
+            {% comment %} <div class="mb-3">
               <label for="cv" class="form-label">CV</label>
               <input class="form-control" type="file" id="cv" name="cv" required />
-            </div>
+            </div> {% endcomment %}
             <div class="form-check mb-3">
               <input class="form-check-input" type="checkbox" value="True" id="terms_accepted" name="terms_accepted" required>
               <label class="form-check-label" for="terms_accepted">
-                I accept all the terms and conditions related to the thesis project.
+                I and my group accept all the terms and conditions related to the thesis project.
               </label>
             </div>
+            <p>
+              <small> By applying here I apply as a group.
+              </small>
+            </p>
             <button type="submit" class="btn btn-primary">Apply</button>
           </form>
         </div>
@@ -101,6 +106,18 @@
         <div class="alert alert-danger" role="alert">The project has finished.</div>
       </div>
     {% else %}
+      <div class="container my-5">
+        <h2 class="text-md-center mb-4">Application</h2>
+        <div class="alert alert-warning" role="alert">
+          You need to be
+          <a href="{% url 'login' %}">logged in</a>
+          as a <b>Student</b> to apply for this project.
+        </div>
+      </div>
+    {% endif %}
+
+    {% else %}
+      {% comment %} login to continue {% endcomment %}
       <div class="container my-5">
         <h2 class="text-md-center mb-4">Application</h2>
         <div class="alert alert-warning" role="alert">

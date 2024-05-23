@@ -8,9 +8,21 @@
       <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
         <ul class="navbar-nav">
           {% if request.user.is_authenticated and not request.user.is_superuser %}
-            {% if request.session.account_type == 'supervisor'%}
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+              Messages <span class="badge bg-danger">{{ new_messages_count }}</span>
+            </a>
+            <ul class="dropdown-menu dropdown-menu-end" style="max-height: 200px; overflow-y: auto;" aria-labelledby="navbarDropdown">
+              {% for conversation in conversations %}
+                <li><a class="dropdown-item" href="{% url 'conversation' conversation.conversation_id %}">{{ conversation.title }}</a></li>
+              {% empty %}
+                <li><a class="dropdown-item" href="#">No conversations</a></li>
+              {% endfor %}
+            </ul>
+          </li>
+          {% if request.session.account_type == 'supervisor'%}
               <li class="nav-item">
-                <a class="nav-link" href="{% url 'applications_supervisor' %}">Applications</a>
+                <a class="nav-link" href="{% url 'applications' %}">Applications</a>
               </li>
               <li class="nav-item">
                 <a class="nav-link" href="{% url 'create_project' %}">Create Project</a>
@@ -20,9 +32,6 @@
               </li>
               {% endif %}
               {% if request.session.account_type == 'unit_coordinator' %}
-              <li class="nav-item">
-                <a class="nav-link" href="{% url 'applications' %}">Applications</a>
-              </li>
               <li class="nav-item">
                 <a class="nav-link" href="{% url 'pending_projects' %}">Pending Projects</a>
               </li>
@@ -41,7 +50,11 @@
             </li>
           {% else %}
             <li class="nav-item">
-              <a class="nav-link" href="{% url 'login' %}">Login</a>
+              {% if request.session.account_type == 'student' %}
+                <a class="nav-link" href="{% url 'login' %}">Login</a>
+              {% else %}
+                <a class="nav-link" href="{% url 'login' %}">Login</a>
+              {% endif %}
             </li>
           {% endif %}
         </ul>

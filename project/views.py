@@ -9,6 +9,9 @@ from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404
 from thesis_apply.functions import handleUploadFile
 from django.http import HttpResponse
+from django.contrib.auth.models import User, Group
+from student.models import Student
+from django.core.exceptions import ObjectDoesNotExist
 
 
 def project_list(request):
@@ -43,7 +46,7 @@ def project_list(request):
     })
 
 
-@login_required
+# @login_required
 def project_detail(request, project_id):
     project_get = get_object_or_404(Project, pk=project_id)
     if project_get.unit_co_approved == False:
@@ -56,24 +59,41 @@ def project_detail(request, project_id):
             if not terms_accepted:
                 return HttpResponse("You must accept the terms and conditions.")
 
-            handleUploadFile(request.FILES['cv'])
             thesis_apply = form.save(commit=False)
             thesis_apply.project = project_get
-            thesis_apply.applied_student = request.user
+            # Get the logged in user's Student object
+            student = None
+            try:
+                student = get_object_or_404(Student, user=request.user)
+            except ObjectDoesNotExist:
+                return HttpResponse("You must be a student to apply for a project.")
+            # Get the group of the logged in student
+            group = student.group
+            # Get all students in the group
+            group_students = Student.objects.filter(group=group)
             thesis_apply.save()
+            # Add the students in the group to the applied_students field
+            thesis_apply.applied_students.set(group_students)
             return redirect('project_detail', project_id=project_id)
+
     elif request.method == 'GET':
         project = Project.objects.get(pk=project_id)
         if project.unit_co_approved == False:
             return HttpResponse("This project is not published by the unit coordinator.")
+        thesis_applied = None
+        if request.user.is_authenticated and not request.user.is_superuser:
+            student = None
+            try:
+                student = get_object_or_404(Student, user=request.user)
+                thesis_applied = ThesisApply.objects.filter(
+                    project=project, applied_students=student)
+            except ObjectDoesNotExist:
+                return HttpResponse("You must be a student to apply for a project.")
 
-        thesis_applied = ThesisApply.objects.filter(
-            project=project, applied_student=request.user)
-        if thesis_applied.exists():
-            thesis_applied = thesis_applied.first()
-            print(f"thesis_applied: {thesis_applied}")
-        else:
-            thesis_applied = None
+            if thesis_applied.exists():
+                thesis_applied = thesis_applied.first()
+            else:
+                thesis_applied = None
         if project.end_date and project.end_date <= timezone.now().date():
             project.status = 'finished'
         else:
@@ -84,5 +104,4 @@ def project_detail(request, project_id):
             'project': project,
             'form': form,
             'thesis_applied': thesis_applied,
-            'required_members': 3,
         })

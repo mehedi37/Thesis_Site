@@ -42,7 +42,9 @@ INSTALLED_APPS = [
     'supervisor',
     'unit_co',
     'project',
-    'thesis_apply'
+    'thesis_apply',
+    'chat',
+    'thesis_site',
 ]
 
 MIDDLEWARE = [
@@ -68,6 +70,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'thesis_site.context_processors.conversations_processor',
             ],
         },
     },
@@ -118,6 +121,8 @@ USE_I18N = True
 USE_TZ = True
 
 SESSION_COOKIE_AGE = 86400
+
+LOGIN_URL = '/login/'
 
 
 # Static files (CSS, JavaScript, Images)
