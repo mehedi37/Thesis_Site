@@ -1,5 +1,5 @@
 from django.http import HttpResponse
-from django.shortcuts import render, redirect
+from django.shortcuts import get_object_or_404, render, redirect
 from project.models import Project
 from datetime import datetime
 from thesis_apply.models import ThesisApply
@@ -181,7 +181,8 @@ def approve_application(request, application_id):
     if request.user.is_authenticated and not request.user.is_superuser:
         account_type = request.session.get('account_type', 'default_value')
         if account_type == 'supervisor':
-            application = ThesisApply.objects.get(thesis_apply_id=application_id)
+            # Get the application or raise a 404 error if it does not exist
+            application = get_object_or_404(ThesisApply, thesis_apply_id=application_id)
             if application.project.supervisor.user != request.user:
                 return HttpResponse('You are not authorized to approve this application')
             if application.supervisor_checked:
@@ -190,31 +191,36 @@ def approve_application(request, application_id):
             application.supervisor_approval = True
             application.supervisor_checked = True
             application.status = 'Approved'
-            if application.project.student.exists() and application.project.student.filter(user=application.applied_students.student.user).exists():
-                application.project.student.add(application.applied_students.student)
+            try:
+                # Add all students in applied_students to the project
+                for student in application.applied_students.all():
+                    application.project.student.add(student)
+            except Exception as e:
+                return HttpResponse(f"An error occurred while adding students: {e}")
+
             application.save()
 
-            supervisor = Supervisor.objects.get(user=request.user)
+            # Get the supervisor or raise a 404 error if it does not exist
+            supervisor = get_object_or_404(Supervisor, user=request.user)
             # Create a new conversation for each group of students that applied
-            group = application.applied_students.first().user.groups.first()
-            conversation = Conversation.objects.create(
-                conversation_title=f"{supervisor.user.username} - {group.name}",
-                supervisor=supervisor,
-                group=group,
-            )
-            # Create a new message
-            Message.objects.create(
-                conversation=conversation,
-                user=request.user,
-                message=f"Group: \"{group.name}\", Your application has been approved !",
-            )
-
+            for student in application.applied_students.all():
+                group = student.user.groups.first()
+                conversation = Conversation.objects.create(
+                    conversation_title=f"{supervisor.user.username} - {group.name}",
+                    supervisor=supervisor,
+                    group=group,
+                )
+                # Create a new message
+                Message.objects.create(
+                    conversation=conversation,
+                    user=request.user,
+                    message=f"Group: \"{group.name}\", Your application has been approved !",
+                )
             return redirect('applications')
         else:
             return redirect('project_list')
     else:
         return redirect('login')
-
 
 def reject_application(request, application_id):
     # reject a specific thesis_apply object
