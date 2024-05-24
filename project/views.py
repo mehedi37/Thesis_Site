@@ -53,6 +53,9 @@ def project_detail(request, project_id):
         return HttpResponse("This project is not published by the unit coordinator.")
 
     if request.method == 'POST':
+        if not request.user.is_authenticated or not Student.objects.filter(user=request.user).exists():
+            return HttpResponse("You must be a student to apply for a project.")
+
         form = ThesisApplyForm(request.POST, request.FILES)
         if form.is_valid():
             terms_accepted = form.cleaned_data.get('terms_accepted', False)
