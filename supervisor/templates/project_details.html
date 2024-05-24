@@ -23,7 +23,7 @@
       </div>
       <div class="mb-3">
         <label for="max_students" class="form-label">Max Students:</label>
-        <input type="number" id="max_students" name="max_students" value="{{ project.max_students|default_if_none:"" }}" class="form-control">
+        <input type="number" id="max_students" name="max_students" value="{{ project.max_students|default_if_none:"" }}" class="form-control" required>
       </div>
       {% if user.is_authenticated and request.session.account_type == 'unit_coordinator' %}
       <div class="mb-3 form-check">
