@@ -19,8 +19,8 @@
               <h5 class="card-title">{{ project.name }}</h5>
               <p class="card-text">Supervisor: {{ project.supervisor.user.username }}</p>
               <p class="card-text">
-                Students:{% for supervisor in project.student.all %}
-                  {{ supervisor.user.username }}{% if not forloop.last %}, {% endif %}
+                Students:{% for stud in project.student.all %}
+                  {{ stud.user.username }}{% if not forloop.last %}, {% endif %}
                 {% endfor %}
               </p>
               {% comment %} <p class="card-text">Unit Coordinator: {{ project.unit_coordinator.user.username }}</p> {% endcomment %}

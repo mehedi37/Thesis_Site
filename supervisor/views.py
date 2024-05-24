@@ -190,8 +190,8 @@ def approve_application(request, application_id):
             application.supervisor_approval = True
             application.supervisor_checked = True
             application.status = 'Approved'
-            if application.project.student.exists() and application.project.student.filter(user=application.applied_student.student.user).exists():
-                application.project.student.add(application.applied_student.student)
+            if application.project.student.exists() and application.project.student.filter(user=application.applied_students.student.user).exists():
+                application.project.student.add(application.applied_students.student)
             application.save()
 
             supervisor = Supervisor.objects.get(user=request.user)
@@ -229,8 +229,8 @@ def reject_application(request, application_id):
             application.supervisor_approval = False
             application.supervisor_checked = True
             application.status = 'Rejected'
-            if application.project.student.exists() and application.project.student.filter(user=application.applied_student.student.user).exists():
-                application.project.student.remove(application.applied_student.student)
+            if application.project.student.exists() and application.project.student.filter(user=application.applied_students.student.user).exists():
+                application.project.student.remove(application.applied_students.student)
             application.save()
             return redirect('applications')
         else:
