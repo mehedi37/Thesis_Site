@@ -85,18 +85,20 @@ def project_detail(request, project_id):
             return HttpResponse("This project is not published by the unit coordinator.")
         thesis_applied = None
         if request.user.is_authenticated and not request.user.is_superuser:
-            student = None
-            try:
-                student = get_object_or_404(Student, user=request.user)
-                thesis_applied = ThesisApply.objects.filter(
-                    project=project, applied_students=student)
-            except ObjectDoesNotExist:
-                return HttpResponse("You must be a student to apply for a project.")
+            account_type = request.session.get('account_type', 'default_value')
+            if account_type == 'student':
+                student = None
+                try:
+                    student = get_object_or_404(Student, user=request.user)
+                    thesis_applied = ThesisApply.objects.filter(
+                        project=project, applied_students=student)
+                except ObjectDoesNotExist:
+                    return HttpResponse("You must be a student to apply for a project.")
 
-            if thesis_applied.exists():
-                thesis_applied = thesis_applied.first()
-            else:
-                thesis_applied = None
+                if thesis_applied.exists():
+                    thesis_applied = thesis_applied.first()
+                else:
+                    thesis_applied = None
         if project.end_date and project.end_date <= timezone.now().date():
             project.status = 'finished'
         else:
