@@ -203,19 +203,19 @@ def approve_application(request, application_id):
             # Get the supervisor or raise a 404 error if it does not exist
             supervisor = get_object_or_404(Supervisor, user=request.user)
             # Create a new conversation for each group of students that applied
-            for student in application.applied_students.all():
-                group = student.user.groups.first()
-                conversation = Conversation.objects.create(
-                    conversation_title=f"{supervisor.user.username} - {group.name}",
-                    supervisor=supervisor,
-                    group=group,
-                )
-                # Create a new message
-                Message.objects.create(
-                    conversation=conversation,
-                    user=request.user,
-                    message=f"Group: \"{group.name}\", Your application has been approved !",
-                )
+            # for student in application.applied_students.all():
+            group = application.applied_students.first().user.groups.first()
+            conversation = Conversation.objects.create(
+                conversation_title=f"{supervisor.user.username} - {group.name}",
+                supervisor=supervisor,
+                group=group,
+            )
+            # Create a new message
+            Message.objects.create(
+                conversation=conversation,
+                user=request.user,
+                message=f"Group: \"{group.name}\", Your application has been approved !",
+            )
             return redirect('applications')
         else:
             return redirect('project_list')
